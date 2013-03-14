@@ -177,7 +177,7 @@ public:
      * @param num_elements Number of elements to copy
      * @param sorted Indicates if results should be sorted
      */
-    void copy(size_t* indices, DistanceType* dists, size_t num_elements, bool sorted = true)
+    void copy(size_t* indices, DistanceType* dists, size_t num_elements, bool /*sorted*/ = true)
     {
     	size_t n = std::min(count_, num_elements);
     	for (size_t i=0; i<n; ++i) {
