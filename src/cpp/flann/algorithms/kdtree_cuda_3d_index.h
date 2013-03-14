@@ -269,7 +269,7 @@ public:
      * Not implemented, since it is only used by single-element searches.
      * (but is needed b/c it is abstract in the base class)
      */
-    void findNeighbors(ResultSet<DistanceType>& result, const ElementType* vec, const SearchParams& searchParams, const Distance *dist = NULL) const
+    void findNeighbors(ResultSet<DistanceType>& result, const ElementType* vec, const SearchParams& searchParams, const Distance * /*dist*/ = NULL) const
     {
     }
 
