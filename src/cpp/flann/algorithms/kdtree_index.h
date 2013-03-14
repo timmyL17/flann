@@ -223,7 +223,7 @@ public:
      */
     void findNeighbors(ResultSet<DistanceType>& result, const ElementType* vec, const SearchParams& searchParams, const Distance *dist = NULL) const
     {
-        if (!dist) {
+        if (dist == NULL) {
             dist = &distance_;
         }
 

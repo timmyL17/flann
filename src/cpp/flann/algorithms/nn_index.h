@@ -305,7 +305,7 @@ public:
     		const SearchParams& params,
     		const Distance *dist = NULL) const
     {
-        if (!dist) {
+        if (dist == NULL) {
             dist = &distance_;
         }
 
@@ -331,7 +331,7 @@ public:
 #pragma omp for schedule(static) reduction(+:count)
     			for (int i = 0; i < (int)queries.rows; i++) {
     				resultSet.clear();
-    				findNeighbors(resultSet, queries[i], params);
+    				findNeighbors(resultSet, queries[i], params, dist);
     				size_t n = std::min(resultSet.size(), knn);
     				resultSet.copy(indices[i], dists[i], n, params.sorted);
     				indices_to_ids(indices[i], indices[i], n);
@@ -346,7 +346,7 @@ public:
 #pragma omp for schedule(static) reduction(+:count)
     			for (int i = 0; i < (int)queries.rows; i++) {
     				resultSet.clear();
-    				findNeighbors(resultSet, queries[i], params);
+    				findNeighbors(resultSet, queries[i], params, dist);
     				size_t n = std::min(resultSet.size(), knn);
     				resultSet.copy(indices[i], dists[i], n, params.sorted);
     				indices_to_ids(indices[i], indices[i], n);
@@ -373,7 +373,7 @@ public:
                            const SearchParams& params,
                            const Distance *dist = NULL) const
     {
-        if (!dist) {
+        if (dist == NULL) {
             dist = &distance_;
         }
 
@@ -405,7 +405,7 @@ public:
     				const SearchParams& params,
     				const Distance *dist = NULL) const
     {
-        if (!dist) {
+        if (dist == NULL) {
             dist = &distance_;
         }
 
@@ -429,7 +429,7 @@ public:
 #pragma omp for schedule(static) reduction(+:count)
 				for (int i = 0; i < (int)queries.rows; i++) {
 					resultSet.clear();
-					findNeighbors(resultSet, queries[i], params);
+					findNeighbors(resultSet, queries[i], params, dist);
 					size_t n = std::min(resultSet.size(), knn);
 					indices[i].resize(n);
 					dists[i].resize(n);
@@ -448,7 +448,7 @@ public:
 #pragma omp for schedule(static) reduction(+:count)
 				for (int i = 0; i < (int)queries.rows; i++) {
 					resultSet.clear();
-					findNeighbors(resultSet, queries[i], params);
+					findNeighbors(resultSet, queries[i], params, dist);
 					size_t n = std::min(resultSet.size(), knn);
 					indices[i].resize(n);
 					dists[i].resize(n);
@@ -481,7 +481,7 @@ public:
                            const SearchParams& params,
                            const Distance *dist = NULL) const
     {
-        if (!dist) {
+        if (dist == NULL) {
             dist = &distance_;
         }
 

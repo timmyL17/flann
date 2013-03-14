@@ -237,7 +237,7 @@ struct L2_SCALING
         ResultType diff0, diff1, diff2, diff3;
         Iterator1 last = a + size;
         Iterator1 lastgroup = last - 3;
-        T *s = scale;
+        const T *s = scale;
 
         /* Process 4 items with each loop for efficiency. */
         while (a < lastgroup) {

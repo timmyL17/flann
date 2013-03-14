@@ -240,10 +240,10 @@ public:
                            const SearchParams& params,
                            Distance *dist = NULL) const
     {
-        if (dist)
+        //if (dist)
             return nnIndex_->knnSearch(queries, indices, dists, knn, params, dist);
-        else
-            return nnIndex_->knnSearch(queries, indices, dists, knn, params);
+        //else
+            //return nnIndex_->knnSearch(queries, indices, dists, knn, params);
     }
 
     /**
