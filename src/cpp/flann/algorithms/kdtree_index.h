@@ -232,18 +232,18 @@ public:
 
         if (maxChecks==FLANN_CHECKS_UNLIMITED) {
         	if (removed_) {
-        		getExactNeighbors<true>(result, vec, epsError);
+        		getExactNeighbors<true>(result, vec, epsError, dist);
         	}
         	else {
-        		getExactNeighbors<false>(result, vec, epsError);
+        		getExactNeighbors<false>(result, vec, epsError, dist);
         	}
         }
         else {
         	if (removed_) {
-        		getNeighbors<true>(result, vec, maxChecks, epsError);
+        		getNeighbors<true>(result, vec, maxChecks, epsError, dist);
         	}
         	else {
-        		getNeighbors<false>(result, vec, maxChecks, epsError);
+        		getNeighbors<false>(result, vec, maxChecks, epsError, dist);
         	}
         }
     }
@@ -521,7 +521,7 @@ private:
      * traversal of the tree.
      */
     template<bool with_removed>
-    void getExactNeighbors(ResultSet<DistanceType>& result, const ElementType* vec, float epsError) const
+    void getExactNeighbors(ResultSet<DistanceType>& result, const ElementType* vec, float epsError, const Distance *dist) const
     {
         //		checkID -= 1;  /* Set a different unique ID for each search. */
 
@@ -529,7 +529,7 @@ private:
             fprintf(stderr,"It doesn't make any sense to use more than one tree for exact search");
         }
         if (trees_>0) {
-            searchLevelExact<with_removed>(result, vec, tree_roots_[0], 0.0, epsError);
+            searchLevelExact<with_removed>(result, vec, tree_roots_[0], 0.0, epsError, dist);
         }
     }
 
@@ -539,7 +539,7 @@ private:
      * the tree.
      */
     template<bool with_removed>
-    void getNeighbors(ResultSet<DistanceType>& result, const ElementType* vec, int maxCheck, float epsError) const
+    void getNeighbors(ResultSet<DistanceType>& result, const ElementType* vec, int maxCheck, float epsError, const Distance *dist) const
     {
         int i;
         BranchSt branch;
@@ -550,12 +550,12 @@ private:
 
         /* Search once through each tree down to root. */
         for (i = 0; i < trees_; ++i) {
-            searchLevel<with_removed>(result, vec, tree_roots_[i], 0, checkCount, maxCheck, epsError, heap, checked);
+            searchLevel<with_removed>(result, vec, tree_roots_[i], 0, checkCount, maxCheck, epsError, heap, checked, dist);
         }
 
         /* Keep searching other branches from heap until finished. */
         while ( heap->popMin(branch) && (checkCount < maxCheck || !result.full() )) {
-            searchLevel<with_removed>(result, vec, branch.node, branch.mindist, checkCount, maxCheck, epsError, heap, checked);
+            searchLevel<with_removed>(result, vec, branch.node, branch.mindist, checkCount, maxCheck, epsError, heap, checked, dist);
         }
 
         delete heap;
@@ -569,7 +569,7 @@ private:
      */
     template<bool with_removed>
     void searchLevel(ResultSet<DistanceType>& result_set, const ElementType* vec, NodePtr node, DistanceType mindist, int& checkCount, int maxCheck,
-                     float epsError, Heap<BranchSt>* heap, DynamicBitset& checked) const
+                     float epsError, Heap<BranchSt>* heap, DynamicBitset& checked, const Distance *distFunc) const
     {
         if (result_set.worstDist()<mindist) {
             //			printf("Ignoring branch, too far\n");
@@ -587,7 +587,7 @@ private:
             checked.set(index);
             checkCount++;
 
-            DistanceType dist = distance_(node->point, vec, veclen_);
+            DistanceType dist = (*distFunc)(node->point, vec, veclen_);
             result_set.addPoint(dist,index);
             return;
         }
@@ -606,21 +606,21 @@ private:
             adding exceeds their value.
          */
 
-        DistanceType new_distsq = mindist + distance_.accum_dist(val, node->divval, node->divfeat);
+        DistanceType new_distsq = mindist + distFunc->accum_dist(val, node->divval, node->divfeat);
         //		if (2 * checkCount < maxCheck  ||  !result.full()) {
         if ((new_distsq*epsError < result_set.worstDist())||  !result_set.full()) {
             heap->insert( BranchSt(otherChild, new_distsq) );
         }
 
         /* Call recursively to search next level down. */
-        searchLevel<with_removed>(result_set, vec, bestChild, mindist, checkCount, maxCheck, epsError, heap, checked);
+        searchLevel<with_removed>(result_set, vec, bestChild, mindist, checkCount, maxCheck, epsError, heap, checked, distFunc);
     }
 
     /**
      * Performs an exact search in the tree starting from a node.
      */
     template<bool with_removed>
-    void searchLevelExact(ResultSet<DistanceType>& result_set, const ElementType* vec, const NodePtr node, DistanceType mindist, const float epsError) const
+    void searchLevelExact(ResultSet<DistanceType>& result_set, const ElementType* vec, const NodePtr node, DistanceType mindist, const float epsError, const Distance *distFunc) const
     {
         /* If this is a leaf node, then do check and return. */
         if ((node->child1 == NULL)&&(node->child2 == NULL)) {
@@ -628,7 +628,7 @@ private:
             if (with_removed) {
             	if (removed_points_.test(index)) return; // ignore removed points
             }
-            DistanceType dist = distance_(node->point, vec, veclen_);
+            DistanceType dist = (*distFunc)(node->point, vec, veclen_);
             result_set.addPoint(dist,index);
 
             return;
@@ -648,13 +648,13 @@ private:
             adding exceeds their value.
          */
 
-        DistanceType new_distsq = mindist + distance_.accum_dist(val, node->divval, node->divfeat);
+        DistanceType new_distsq = mindist + distFunc->accum_dist(val, node->divval, node->divfeat);
 
         /* Call recursively to search next level down. */
-        searchLevelExact<with_removed>(result_set, vec, bestChild, mindist, epsError);
+        searchLevelExact<with_removed>(result_set, vec, bestChild, mindist, epsError, distFunc);
 
         if (mindist*epsError<=result_set.worstDist()) {
-            searchLevelExact<with_removed>(result_set, vec, otherChild, new_distsq, epsError);
+            searchLevelExact<with_removed>(result_set, vec, otherChild, new_distsq, epsError, distFunc);
         }
     }
     

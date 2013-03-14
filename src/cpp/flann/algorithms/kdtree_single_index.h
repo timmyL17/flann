@@ -228,10 +228,10 @@ public:
         std::vector<DistanceType> dists(veclen_,0);
         DistanceType distsq = computeInitialDistances(vec, dists);
         if (removed_) {
-            searchLevel<true>(result, vec, root_node_, distsq, dists, epsError);
+            searchLevel<true>(result, vec, root_node_, distsq, dists, epsError, dist);
         }
         else {
-            searchLevel<false>(result, vec, root_node_, distsq, dists, epsError);
+            searchLevel<false>(result, vec, root_node_, distsq, dists, epsError, dist);
         }
     }
 
@@ -595,7 +595,7 @@ private:
      */
     template <bool with_removed>
     void searchLevel(ResultSet<DistanceType>& result_set, const ElementType* vec, const NodePtr node, DistanceType mindistsq,
-                     std::vector<DistanceType>& dists, const float epsError) const
+                     std::vector<DistanceType>& dists, const float epsError, const Distance *distFunc) const
     {
         /* If this is a leaf node, then do check and return. */
         if ((node->child1 == NULL)&&(node->child2 == NULL)) {
@@ -605,7 +605,7 @@ private:
                     if (removed_points_.test(vind_[i])) continue;
                 }
                 ElementType* point = reorder_ ? data_[i] : points_[vind_[i]];
-                DistanceType dist = distance_(vec, point, veclen_, worst_dist);
+                DistanceType dist = (*distFunc)(vec, point, veclen_, worst_dist);
                 if (dist<worst_dist) {
                     result_set.addPoint(dist,vind_[i]);
                 }
@@ -625,22 +625,22 @@ private:
         if ((diff1+diff2)<0) {
             bestChild = node->child1;
             otherChild = node->child2;
-            cut_dist = distance_.accum_dist(val, node->divhigh, idx);
+            cut_dist = distFunc->accum_dist(val, node->divhigh, idx);
         }
         else {
             bestChild = node->child2;
             otherChild = node->child1;
-            cut_dist = distance_.accum_dist( val, node->divlow, idx);
+            cut_dist = distFunc->accum_dist( val, node->divlow, idx);
         }
 
         /* Call recursively to search next level down. */
-        searchLevel<with_removed>(result_set, vec, bestChild, mindistsq, dists, epsError);
+        searchLevel<with_removed>(result_set, vec, bestChild, mindistsq, dists, epsError, distFunc);
 
         DistanceType dst = dists[idx];
         mindistsq = mindistsq + cut_dist - dst;
         dists[idx] = cut_dist;
         if (mindistsq*epsError<=result_set.worstDist()) {
-            searchLevel<with_removed>(result_set, vec, otherChild, mindistsq, dists, epsError);
+            searchLevel<with_removed>(result_set, vec, otherChild, mindistsq, dists, epsError, distFunc);
         }
         dists[idx] = dst;
     }
