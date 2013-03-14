@@ -378,7 +378,7 @@ public:
         }
 
     	flann::Matrix<size_t> indices_(new size_t[indices.rows*indices.cols], indices.rows, indices.cols);
-    	int result = knnSearch(queries, indices_, dists, knn, params);
+    	int result = knnSearch(queries, indices_, dists, knn, params, dist);
 
     	for (size_t i=0;i<indices.rows;++i) {
     		for (size_t j=0;j<indices.cols;++j) {
@@ -486,7 +486,7 @@ public:
         }
 
     	std::vector<std::vector<size_t> > indices_;
-    	int result = knnSearch(queries, indices_, dists, knn, params);
+    	int result = knnSearch(queries, indices_, dists, knn, params, dist);
 
     	indices.resize(indices_.size());
     	for (size_t i=0;i<indices_.size();++i) {
@@ -710,7 +710,7 @@ public:
     }
 
 
-    virtual void findNeighbors(ResultSet<DistanceType>& result, const ElementType* vec, const SearchParams& searchParams) const = 0;
+    virtual void findNeighbors(ResultSet<DistanceType>& result, const ElementType* vec, const SearchParams& searchParams, const Distance *dist = NULL) const = 0;
 
 protected:
 

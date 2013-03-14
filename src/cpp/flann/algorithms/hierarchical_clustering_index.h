@@ -279,7 +279,7 @@ public:
      *     searchParams = parameters that influence the search algorithm (checks)
      */
 
-    void findNeighbors(ResultSet<DistanceType>& result, const ElementType* vec, const SearchParams& searchParams) const
+    void findNeighbors(ResultSet<DistanceType>& result, const ElementType* vec, const SearchParams& searchParams, const Distance *dist = NULL) const
     {
     	if (removed_) {
     		findNeighborsWithRemoved<true>(result, vec, searchParams);

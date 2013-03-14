@@ -221,8 +221,12 @@ public:
      *     vec = the vector for which to search the nearest neighbors
      *     maxCheck = the maximum number of restarts (in a best-bin-first manner)
      */
-    void findNeighbors(ResultSet<DistanceType>& result, const ElementType* vec, const SearchParams& searchParams) const
+    void findNeighbors(ResultSet<DistanceType>& result, const ElementType* vec, const SearchParams& searchParams, const Distance *dist = NULL) const
     {
+        if (!dist) {
+            dist = &distance_;
+        }
+
         int maxChecks = searchParams.checks;
         float epsError = 1+searchParams.eps;
 
