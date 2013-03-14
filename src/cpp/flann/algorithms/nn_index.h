@@ -302,8 +302,13 @@ public:
     		Matrix<size_t>& indices,
     		Matrix<DistanceType>& dists,
     		size_t knn,
-    		const SearchParams& params) const
+    		const SearchParams& params,
+    		const Distance *dist = NULL) const
     {
+        if (!dist) {
+            dist = &distance_;
+        }
+
     	assert(queries.cols == veclen());
     	assert(indices.rows >= queries.rows);
     	assert(dists.rows >= queries.rows);
@@ -365,8 +370,13 @@ public:
                                  Matrix<int>& indices,
                                  Matrix<DistanceType>& dists,
                                  size_t knn,
-                           const SearchParams& params) const
+                           const SearchParams& params,
+                           const Distance *dist = NULL) const
     {
+        if (!dist) {
+            dist = &distance_;
+        }
+
     	flann::Matrix<size_t> indices_(new size_t[indices.rows*indices.cols], indices.rows, indices.cols);
     	int result = knnSearch(queries, indices_, dists, knn, params);
 
@@ -392,8 +402,13 @@ public:
 					std::vector< std::vector<size_t> >& indices,
 					std::vector<std::vector<DistanceType> >& dists,
     				size_t knn,
-    				const SearchParams& params) const
+    				const SearchParams& params,
+    				const Distance *dist = NULL) const
     {
+        if (!dist) {
+            dist = &distance_;
+        }
+
         assert(queries.cols == veclen());
         bool use_heap;
         if (params.use_heap==FLANN_Undefined) {
@@ -463,8 +478,13 @@ public:
                                  std::vector< std::vector<int> >& indices,
                                  std::vector<std::vector<DistanceType> >& dists,
                                  size_t knn,
-                           const SearchParams& params) const
+                           const SearchParams& params,
+                           const Distance *dist = NULL) const
     {
+        if (!dist) {
+            dist = &distance_;
+        }
+
     	std::vector<std::vector<size_t> > indices_;
     	int result = knnSearch(queries, indices_, dists, knn, params);
 

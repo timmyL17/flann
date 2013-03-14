@@ -237,9 +237,13 @@ public:
                                  Matrix<size_t>& indices,
                                  Matrix<DistanceType>& dists,
                                  size_t knn,
-                           const SearchParams& params) const
+                           const SearchParams& params,
+                           Distance *dist = NULL) const
     {
-    	return nnIndex_->knnSearch(queries, indices, dists, knn, params);
+        if (dist)
+            return nnIndex_->knnSearch(queries, indices, dists, knn, params, dist);
+        else
+            return nnIndex_->knnSearch(queries, indices, dists, knn, params);
     }
 
     /**
@@ -255,9 +259,13 @@ public:
                                  Matrix<int>& indices,
                                  Matrix<DistanceType>& dists,
                                  size_t knn,
-                           const SearchParams& params) const
+                           const SearchParams& params,
+                           Distance *dist = NULL) const
     {
-    	return nnIndex_->knnSearch(queries, indices, dists, knn, params);
+        if (dist)
+            return nnIndex_->knnSearch(queries, indices, dists, knn, params, dist);
+        else
+            return nnIndex_->knnSearch(queries, indices, dists, knn, params);
     }
 
     /**
@@ -272,9 +280,13 @@ public:
                                  std::vector< std::vector<size_t> >& indices,
                                  std::vector<std::vector<DistanceType> >& dists,
                                  size_t knn,
-                           const SearchParams& params)
+                           const SearchParams& params,
+                           Distance *dist = NULL)
     {
-    	return nnIndex_->knnSearch(queries, indices, dists, knn, params);
+        if (dist)
+            return nnIndex_->knnSearch(queries, indices, dists, knn, params, dist);
+        else
+            return nnIndex_->knnSearch(queries, indices, dists, knn, params);
     }
 
     /**
@@ -290,9 +302,13 @@ public:
                                  std::vector< std::vector<int> >& indices,
                                  std::vector<std::vector<DistanceType> >& dists,
                                  size_t knn,
-                           const SearchParams& params) const
+                           const SearchParams& params,
+                           Distance *dist = NULL) const
     {
-    	return nnIndex_->knnSearch(queries, indices, dists, knn, params);
+        if (dist)
+            return nnIndex_->knnSearch(queries, indices, dists, knn, params, dist);
+        else
+            return nnIndex_->knnSearch(queries, indices, dists, knn, params);
     }
 
     /**
