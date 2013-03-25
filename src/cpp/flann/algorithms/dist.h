@@ -293,6 +293,7 @@ struct STEP_SCALING
 
     T slopeGood[SZ];
     T slopeBad[SZ];
+    T badStart[SZ];
     constexpr static T goodY = .1;
     constexpr static T badY = 2;
 
@@ -303,6 +304,7 @@ struct STEP_SCALING
             good[i] = std::numeric_limits<T>::max();
             slopeGood[i] = 1;
             slopeBad[i] = 1;
+            badStart[i] = 0;
         }
     }
 
@@ -313,6 +315,7 @@ struct STEP_SCALING
             good[i] = goodVals[i] * goodVals[i];
             slopeGood[i] = goodY / good[i];
             slopeBad[i] = (badY - goodY) / (badVals[i] * badVals[i] - good[i]);
+            badStart[i] = good[i] * slopeGood[i];
         }
     }
 
@@ -335,6 +338,7 @@ struct STEP_SCALING
         const T *g = good;
         const T *sg = slopeGood;
         const T *sb = slopeBad;
+        const T *bs = badStart;
 
         /* Process 4 items with each loop for efficiency. */
         while (a < lastgroup) {
@@ -354,7 +358,7 @@ struct STEP_SCALING
             }
             else
             {
-                diff0 = (diff0 - g[0]) * sb[0] + goodY;
+                diff0 = (diff0 - g[0]) * sb[0] + bs[0];
             }
 
             if (diff1 <= g[1])
@@ -363,7 +367,7 @@ struct STEP_SCALING
             }
             else
             {
-                diff1 = (diff1 - g[1]) * sb[1] + goodY;
+                diff1 = (diff1 - g[1]) * sb[1] + bs[1];
             }
 
             if (diff2 <= g[2])
@@ -372,7 +376,7 @@ struct STEP_SCALING
             }
             else
             {
-                diff2 = (diff2 - g[2]) * sb[2] + goodY;
+                diff2 = (diff2 - g[2]) * sb[2] + bs[2];
             }
 
             if (diff3 <= g[3])
@@ -381,7 +385,7 @@ struct STEP_SCALING
             }
             else
             {
-                diff3 = (diff3 - g[3]) * sb[3] + goodY;
+                diff3 = (diff3 - g[3]) * sb[3] + bs[3];
             }
 
             result += diff0 + diff1 + diff2 + diff3;
@@ -390,6 +394,7 @@ struct STEP_SCALING
             g += 4;
             sg += 4;
             sb += 4;
+            bs += 4;
 
             if ((worst_dist>0)&&(result>worst_dist)) {
                 return result;
@@ -406,12 +411,13 @@ struct STEP_SCALING
             }
             else
             {
-                diff0 = (diff0 - *g) * *sb + goodY;
+                diff0 = (diff0 - *g) * *sb + *bs;
             }
 
             g++;
             sg++;
             sb++;
+            bs++;
 
             result += diff0;
         }
@@ -431,7 +437,7 @@ struct STEP_SCALING
         }
         else
         {
-            return (sq - good[ind]) * slopeBad[ind] + goodY;
+            return (sq - good[ind]) * slopeBad[ind] + badStart[ind];
         }
     }
 };
