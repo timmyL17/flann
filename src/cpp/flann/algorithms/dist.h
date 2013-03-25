@@ -109,14 +109,14 @@ struct L2_3D
     template <typename Iterator1, typename Iterator2>
     ResultType operator()(Iterator1 a, Iterator2 b, size_t size, ResultType /*worst_dist*/ = -1) const
     {
-        ResultType result = ResultType();        
+        ResultType result = ResultType();
         ResultType diff;
         diff = *a++ - *b++;
         result += diff*diff;
         diff = *a++ - *b++;
         result += diff*diff;
         diff = *a++ - *b++;
-        result += diff*diff;        
+        result += diff*diff;
         return result;
     }
 
@@ -275,6 +275,161 @@ struct L2_SCALING
     }
 };
 
+/**
+ * Linear step function
+ */
+template<class T, size_t SZ>
+struct STEP_SCALING
+{
+    typedef bool is_kdtree_distance;
+
+    typedef T ElementType;
+    typedef typename Accumulator<T>::Type ResultType;
+
+    /**
+     * Small slope from 0 to good, large slope after good
+     */
+    T good[SZ];
+
+    T slopeGood[SZ];
+    T slopeBad[SZ];
+    const static T goodY = .1;
+    const static T badY = 2;
+
+    STEP_SCALING()
+    {
+        throw std::logic_error("need to supply good vals");
+    }
+
+    STEP_SCALING(const T *goodVals, const T *badVals)
+    {
+        for(size_t i = 0; i < SZ; ++i)
+        {
+            good[i] = goodVals[i] * goodVals[i];
+            slopeGood[i] = goodY / good[i];
+            slopeBad[i] = (badY - goodY) / (badVals[i] * badVals[i] - good[i]);
+        }
+    }
+
+    /**
+     *  Compute the squared Euclidean distance between two vectors.
+     *
+     *	This is highly optimised, with loop unrolling, as it is one
+     *	of the most expensive inner loops.
+     *
+     *	The computation of squared root at the end is omitted for
+     *	efficiency.
+     */
+    template <typename Iterator1, typename Iterator2>
+    ResultType operator()(Iterator1 a, Iterator2 b, size_t size, ResultType worst_dist = -1) const
+    {
+        ResultType result = ResultType();
+        ResultType diff0, diff1, diff2, diff3;
+        Iterator1 last = a + size;
+        Iterator1 lastgroup = last - 3;
+        const T *g = good;
+        const T *sg = slopeGood;
+        const T *sb = slopeBad;
+
+        /* Process 4 items with each loop for efficiency. */
+        while (a < lastgroup) {
+            diff0 = (ResultType)((a[0] - b[0]));
+            diff1 = (ResultType)((a[1] - b[1]));
+            diff2 = (ResultType)((a[2] - b[2]));
+            diff3 = (ResultType)((a[3] - b[3]));
+
+            diff0 *= diff0;
+            diff1 *= diff1;
+            diff2 *= diff2;
+            diff3 *= diff3;
+
+            if (diff0 <= g[0])
+            {
+                diff0 *= sg[0];
+            }
+            else
+            {
+                diff0 = (diff0 - g[0]) * sb[0] + goodY;
+            }
+
+            if (diff1 <= g[1])
+            {
+                diff1 *= sg[1];
+            }
+            else
+            {
+                diff1 = (diff1 - g[1]) * sb[1] + goodY;
+            }
+
+            if (diff2 <= g[2])
+            {
+                diff2 *= sg[2];
+            }
+            else
+            {
+                diff2 = (diff2 - g[2]) * sb[2] + goodY;
+            }
+
+            if (diff3 <= g[3])
+            {
+                diff3 *= sg[3];
+            }
+            else
+            {
+                diff3 = (diff3 - g[3]) * sb[3] + goodY;
+            }
+
+            result += diff0 + diff1 + diff2 + diff3;
+            a += 4;
+            b += 4;
+            g += 4;
+            sg += 4;
+            sb += 4;
+
+            if ((worst_dist>0)&&(result>worst_dist)) {
+                return result;
+            }
+        }
+        /* Process last 0-3 pixels.  Not needed for standard vector lengths. */
+        while (a < last) {
+            diff0 = (ResultType)((*a++ - *b++));
+            diff0 *= diff0;
+
+            if (diff0 <= *g)
+            {
+                diff0 *= *sg;
+            }
+            else
+            {
+                diff0 = (diff0 - *g) * *sb + goodY;
+            }
+
+            g++;
+            sg++;
+            sb++;
+
+            result += diff0;
+        }
+        return result;
+    }
+
+    /**
+     *	Partial distance.
+     */
+    template <typename U, typename V>
+    inline ResultType accum_dist(const U& a, const V& b, int ind) const
+    {
+        ResultType sq = (a-b)*(a-b);
+        if (sq <= good[ind])
+        {
+            return sq * slopeGood[ind];
+        }
+        else
+        {
+            return (sq - good[ind]) * slopeBad[ind] + goodY;
+        }
+    }
+};
 
 /*
  * Manhattan distance functor, optimized version
