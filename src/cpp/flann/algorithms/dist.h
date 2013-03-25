@@ -299,6 +299,12 @@ struct STEP_SCALING
     STEP_SCALING()
     {
         throw std::logic_error("need to supply good vals");
+        for(size_t i = 0; i < SZ; ++i)
+        {
+            good[i] = std::numeric_limits<T>::max();
+            slopeGood[i] = 1;
+            slopeBad[i] = 1;
+        }
     }
 
     STEP_SCALING(const T *goodVals, const T *badVals)
