@@ -295,8 +295,8 @@ struct STEP_SCALING
     T slopeBad[SZ];
     constexpr static T goodY = .1;
     constexpr static T badY = 2;
-    constexpr static T goodYSq = goodY * goodY;
-    constexpr static T badYSq = badY * badY;
+    constexpr static T goodYSq = .1 * .1;
+    constexpr static T badYSq = 2 * 2;
 
     STEP_SCALING()
     {
