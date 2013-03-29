@@ -308,13 +308,14 @@ struct STEP_SCALING
         }
     }
 
+    // goodVals and badVals are in ^2 space
     STEP_SCALING(const T *goodVals, const T *badVals)
     {
         for(size_t i = 0; i < SZ; ++i)
         {
-            good[i] = goodVals[i] * goodVals[i];
+            good[i] = goodVals[i];
             slopeGood[i] = goodYSq / good[i];
-            slopeBad[i] = (badYSq - goodYSq) / (badVals[i] * badVals[i] - good[i]);
+            slopeBad[i] = (badYSq - goodYSq) / (badVals[i] - good[i]);
         }
     }
 
